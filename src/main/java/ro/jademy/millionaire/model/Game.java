@@ -1,8 +1,7 @@
 package ro.jademy.millionaire.model;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
+
 
 public class Game {
 
@@ -38,6 +37,7 @@ public class Game {
 
     private List<Lifeline> lifelines = new ArrayList<>();
     private Level currentLevel = LEVELS.get(0);
+    int indexLevel = 0;
 
     public Game(List<Question> difficultyZeroQuestions, List<Question> difficultyOneQuestions, List<Question> difficultyTwoQuestions, List<Question> difficultyThreeQuestions) {
         this.difficultyZeroQuestions = difficultyZeroQuestions;
@@ -67,11 +67,110 @@ public class Game {
 
         showWelcome();
         showRules();
+
+
+        showQuestion();
     }
 
     private void showRules() {
+        boolean validInput = false;
+
+        System.out.println("The rules: ");
+        System.out.println("You will be given a question. You have 4 answer options and only 1 is correct");
+        System.out.println("You have: 3 lifelines !");
+        System.out.println("Lifeline 50-50  gives you 2 answers options instead of 4, so it's easier to answer correctly !");
+        System.out.println("You have 4 reward checkpoints , meaning if you answer incorrectly after the checkpoint, ");
+        System.out.println("You will still get the prize from that reward checkpoint");
+        System.out.println("You can see the question BEFORE deciding if you want to answer or not !");
+        System.out.println("If you decide to leave, you will be given the last reward checkpoint you reached !");
+        System.out.println("[Choose option by typing 1, 2, 3, 4 ] [H for lifeline] [Q to quit] ");
+        System.out.println();
+    }
+    private void showWelcome() {
+        System.out.println("||=========================================||");
+        System.out.println("||                                         ||");
+        System.out.println("||               WELCOME TO                ||");
+        System.out.println("|| 'WHO WANTS TO BE A BILLIONAIRE Game' !! ||");
+        System.out.println("||                                         ||");
+        System.out.println("||=========================================||");
+        System.out.println();
     }
 
-    private void showWelcome() {
+    private void showQuestion() {
+        Question question;
+        List<Answer> allAnswers;
+
+        switch (currentLevel.getDifficultyLevel()) {
+            case 0:
+                question = difficultyZeroQuestions.get(0);
+                allAnswers = printQuestion(question);
+                System.out.println();
+                System.out.println("Applying lifeline:");
+
+                // TODO
+                // let's assume user responded with apply lifeline
+                // do all validation beforehand
+                applyLifeline(lifelines.get(0), allAnswers, question.getCorrectAnswer());
+                break;
+            case 1:
+                question = difficultyOneQuestions.get(0);
+                allAnswers = printQuestion(question);
+                applyLifeline(lifelines.get(0), allAnswers, question.getCorrectAnswer());
+                break;
+            case 2:
+                question = difficultyTwoQuestions.get(0);
+                allAnswers = printQuestion(question);
+                applyLifeline(lifelines.get(0), allAnswers, question.getCorrectAnswer());
+                break;
+            case 3:
+                question = difficultyThreeQuestions.get(0);
+                allAnswers = printQuestion(question);
+                applyLifeline(lifelines.get(0), allAnswers, question.getCorrectAnswer());
+                break;
+            default:
+                System.out.println("Unknown difficulty level");
+                break;
+        }
+    }
+
+    private List<Answer> printQuestion(Question question) {
+        System.out.println(question.getText());
+        System.out.println();
+
+        List<Answer> allAnswers = new ArrayList<>(question.getWrongAnswers());
+        allAnswers.add(question.getCorrectAnswer());
+        // randomize list
+        Collections.shuffle(allAnswers);
+
+        for (int i = 0; i < allAnswers.size(); i++) {
+            System.out.println(((char) (65 + i)) + ". " + allAnswers.get(i).getText());
+        }
+
+        return allAnswers;
+    }
+
+    private void applyLifeline(Lifeline lifeline, List<Answer> allAnswers, Answer correctAnswer) {
+
+        if (lifeline.getName().equals("50-50")) {
+            // print all answers except two random WRONG answers
+            Random rnd = new Random();
+            List<Answer> answerListCopy = new ArrayList<>(allAnswers);
+            answerListCopy.remove(correctAnswer);
+            answerListCopy.remove(rnd.nextInt(answerListCopy.size()));
+            answerListCopy.remove(rnd.nextInt(answerListCopy.size()));
+
+            for (int i = 0; i < allAnswers.size(); i++) {
+                Answer answer = allAnswers.get(i);
+                if (answer.equals(correctAnswer) || answerListCopy.contains(answer)) {
+                    System.out.println(((char) (65 + i)) + ". " + allAnswers.get(i).getText());
+                } else {
+                    System.out.println(((char) (65 + i)) + ". ");
+                }
+            }
+        }
+
+        lifeline.setUsed(true);
     }
 }
+
+
